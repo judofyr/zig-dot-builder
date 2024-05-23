@@ -35,7 +35,7 @@ pub fn Builder(comptime Node: type) type {
         node_map: NodeMap,
 
         pub fn init(arena: *std.heap.ArenaAllocator) !Self {
-            var allocator = arena.allocator();
+            const allocator = arena.allocator();
             return Self{
                 .arena = arena,
                 .queue = Queue.init(allocator),
@@ -54,7 +54,7 @@ pub fn Builder(comptime Node: type) type {
             _ = try self.nodeEntry(node);
         }
 
-        /// Defines a node with 
+        /// Defines a node with
         pub fn defNode(self: *Self, node: Node, node_attrs: ?AttrList) !void {
             var entry = try self.nodeEntry(node);
             entry.attrs = node_attrs;
@@ -156,7 +156,7 @@ const ExampleNode = struct {
 
     pub fn build(self: *const ExampleNode, b: anytype) !void {
         try b.defNode(self, b.attrs().withLabel("{}", .{self.val}));
-        for (self.children) |child, idx| {
+        for (self.children, 0..) |child, idx| {
             try b.defEdge(self, child, b.attrs().withLabel("{}", .{idx}));
         }
     }

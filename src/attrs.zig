@@ -44,7 +44,7 @@ pub const AttrList = struct {
     ) !void {
         if (self.entries.items.len == 0) return;
         try w.writeByte('[');
-        for (self.entries.items) |entry, idx| {
+        for (self.entries.items, 0..) |entry, idx| {
             if (idx > 0) try w.writeByte(',');
             try writeDotId(w, entry.key);
             try w.writeByte('=');

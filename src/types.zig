@@ -194,7 +194,7 @@ pub const Color = union(enum) {
         writer: anytype,
     ) !void {
         switch (self) {
-            .rgb => |rgb| try rgb.format(fmt, options, writer),
+            .rgb => |r| try r.format(fmt, options, writer),
             .name => |name| try writer.writeAll(name),
             .num => |n| try writer.print("{}", .{n}),
         }
