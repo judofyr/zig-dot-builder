@@ -9,8 +9,11 @@ pub const AttrList = struct {
         value: []const u8,
     };
 
+    const LinkedList = std.SinglyLinkedList(Attr);
+
     arena: *std.heap.ArenaAllocator,
-    entries: std.ArrayListUnmanaged(Attr),
+    entries: LinkedList,
+    last_node: ?*LinkedList.Node = null,
 
     pub fn init(arena: *std.heap.ArenaAllocator) AttrList {
         return AttrList{ .arena = arena, .entries = .{} };
@@ -18,7 +21,14 @@ pub const AttrList = struct {
 
     pub fn withAttr(self: AttrList, key: []const u8, value: []const u8) AttrList {
         var copy = self;
-        copy.entries.append(self.arena.allocator(), .{ .key = key, .value = value }) catch @panic("allocation error");
+        const node = self.arena.allocator().create(LinkedList.Node) catch @panic("allocation error");
+        node.data = .{ .key = key, .value = value };
+        if (copy.last_node) |last_node| {
+            last_node.insertAfter(node);
+        } else {
+            copy.entries.prepend(node);
+        }
+        copy.last_node = node;
         return copy;
     }
 
@@ -42,13 +52,17 @@ pub const AttrList = struct {
         self: AttrList,
         w: anytype,
     ) !void {
-        if (self.entries.items.len == 0) return;
+        if (self.last_node == null) return;
+        var node = self.entries.first;
         try w.writeByte('[');
-        for (self.entries.items, 0..) |entry, idx| {
+        var idx: usize = 0;
+        while (node) |n| {
             if (idx > 0) try w.writeByte(',');
-            try writeDotId(w, entry.key);
+            try writeDotId(w, n.data.key);
             try w.writeByte('=');
-            try writeDotId(w, entry.value);
+            try writeDotId(w, n.data.value);
+            idx += 1;
+            node = n.next;
         }
         try w.writeByte(']');
     }
@@ -57,11 +71,13 @@ pub const AttrList = struct {
         self: AttrList,
         w: anytype,
     ) !void {
-        for (self.entries.items) |entry| {
-            try writeDotId(w, entry.key);
+        var node = self.entries.first;
+        while (node) |n| {
+            try writeDotId(w, n.data.key);
             try w.writeByte('=');
-            try writeDotId(w, entry.value);
+            try writeDotId(w, n.data.value);
             try w.writeByte(';');
+            node = n.next;
         }
     }
 
