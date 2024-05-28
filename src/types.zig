@@ -161,6 +161,24 @@ pub const DirType = enum {
     }
 };
 
+pub const Rankdir = enum {
+    TB,
+    LR,
+    BT,
+    RL,
+
+    pub fn format(
+        self: Rankdir,
+        comptime fmt: []const u8,
+        options: std.fmt.FormatOptions,
+        writer: anytype,
+    ) !void {
+        _ = fmt;
+        _ = options;
+        try writer.writeAll(@tagName(self));
+    }
+};
+
 pub const RGB = struct {
     red: u8,
     green: u8,

@@ -29,6 +29,8 @@ pub fn Builder(comptime Node: type) type {
         arena: *std.heap.ArenaAllocator,
         queue: Queue,
 
+        graph_attrs: ?AttrList = null,
+
         // These are arrays so that we preserve the order of which they are inserted.
         nodes: NodeList,
         edges: EdgeList,
@@ -118,6 +120,10 @@ pub fn Builder(comptime Node: type) type {
             try self.processQueue();
 
             try w.writeAll("digraph {\n");
+
+            if (self.graph_attrs) |graph_attrs| {
+                try graph_attrs.writeToAsStmts(w);
+            }
 
             for (self.nodes.items) |node| {
                 try writeDotId(w, node.id);

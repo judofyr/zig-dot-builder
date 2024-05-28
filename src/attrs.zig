@@ -53,6 +53,18 @@ pub const AttrList = struct {
         try w.writeByte(']');
     }
 
+    pub fn writeToAsStmts(
+        self: AttrList,
+        w: anytype,
+    ) !void {
+        for (self.entries.items) |entry| {
+            try writeDotId(w, entry.key);
+            try w.writeByte('=');
+            try writeDotId(w, entry.value);
+            try w.writeByte(';');
+        }
+    }
+
     pub fn asString(self: AttrList) ![]const u8 {
         return try std.fmt.allocPrint(self.arena.allocator(), "{}", .{self});
     }
@@ -161,6 +173,10 @@ pub const AttrList = struct {
 
     pub fn withShape(self: AttrList, shape: types.Shape) AttrList {
         return self.withAttrPrint("shape", "{}", .{shape});
+    }
+
+    pub fn withRankdir(self: AttrList, rankdir: types.Rankdir) AttrList {
+        return self.withAttrPrint("rankdir", "{}", .{rankdir});
     }
 };
 
