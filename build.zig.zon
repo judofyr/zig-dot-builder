@@ -1,5 +1,5 @@
 .{
     .name = "dot-builder",
-    .paths = .{ "src", "build.zig", "build.zig.zon" },
+    .paths = .{ "src", "build.zig", "build.zig.zon", "LICENSE.txt" },
     .version = "0.0.0",
 }
