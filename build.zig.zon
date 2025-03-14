@@ -1,5 +1,6 @@
 .{
-    .name = "dot-builder",
+    .name = .dotbuilder,
+    .fingerprint = 0xdb0d6d54c280a5f8,
     .paths = .{ "src", "build.zig", "build.zig.zon", "LICENSE.txt" },
     .version = "0.0.0",
 }
