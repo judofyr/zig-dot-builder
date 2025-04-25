@@ -7,28 +7,30 @@ pub const AttrList = struct {
     const Attr = struct {
         key: []const u8,
         value: []const u8,
+        node: std.SinglyLinkedList.Node = .{},
     };
 
-    const LinkedList = std.SinglyLinkedList(Attr);
+    const LinkedList = std.SinglyLinkedList;
 
     arena: *std.heap.ArenaAllocator,
-    entries: LinkedList,
-    last_node: ?*LinkedList.Node = null,
+    first_attr: ?*Attr = null,
+    last_attr: ?*Attr = null,
 
     pub fn init(arena: *std.heap.ArenaAllocator) AttrList {
-        return AttrList{ .arena = arena, .entries = .{} };
+        return AttrList{ .arena = arena };
     }
 
     pub fn withAttr(self: AttrList, key: []const u8, value: []const u8) AttrList {
         var copy = self;
-        const node = self.arena.allocator().create(LinkedList.Node) catch @panic("allocation error");
-        node.data = .{ .key = key, .value = value };
-        if (copy.last_node) |last_node| {
-            last_node.insertAfter(node);
+        const attr = self.arena.allocator().create(Attr) catch @panic("allocation error");
+        attr.* = .{ .key = key, .value = value };
+        if (copy.last_attr) |last_attr| {
+            last_attr.node.insertAfter(&attr.node);
+            copy.last_attr = attr;
         } else {
-            copy.entries.prepend(node);
+            copy.first_attr = attr;
+            copy.last_attr = attr;
         }
-        copy.last_node = node;
         return copy;
     }
 
@@ -52,17 +54,21 @@ pub const AttrList = struct {
         self: AttrList,
         w: anytype,
     ) !void {
-        if (self.last_node == null) return;
-        var node = self.entries.first;
+        if (self.first_attr == null) return;
+        var attr = self.first_attr;
         try w.writeByte('[');
         var idx: usize = 0;
-        while (node) |n| {
+        while (attr) |a| {
             if (idx > 0) try w.writeByte(',');
-            try writeDotId(w, n.data.key);
+            try writeDotId(w, a.key);
             try w.writeByte('=');
-            try writeDotId(w, n.data.value);
+            try writeDotId(w, a.value);
             idx += 1;
-            node = n.next;
+            if (a.node.next) |next_node| {
+                attr = @as(*Attr, @fieldParentPtr("node", next_node));
+            } else {
+                attr = null;
+            }
         }
         try w.writeByte(']');
     }
@@ -71,13 +77,18 @@ pub const AttrList = struct {
         self: AttrList,
         w: anytype,
     ) !void {
-        var node = self.entries.first;
-        while (node) |n| {
-            try writeDotId(w, n.data.key);
+        var attr = self.first_attr;
+        while (attr) |a| {
+            try writeDotId(w, a.key);
             try w.writeByte('=');
-            try writeDotId(w, n.data.value);
+            try writeDotId(w, a.value);
             try w.writeByte(';');
-            node = n.next;
+
+            if (a.node.next) |next_node| {
+                attr = @as(*Attr, @fieldParentPtr("node", next_node));
+            } else {
+                attr = null;
+            }
         }
     }
 
