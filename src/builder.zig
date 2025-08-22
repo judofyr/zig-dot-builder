@@ -12,7 +12,7 @@ pub fn Builder(comptime Node: type) type {
         const Queue = std.ArrayList(Node);
         const EdgeList = std.ArrayList(EdgeEntry);
         const NodeList = std.ArrayList(NodeEntry);
-        const NodeMap = std.hash_map.StringHashMap(usize);
+        const NodeMap = std.hash_map.StringHashMapUnmanaged(usize);
 
         const NodeEntry = struct {
             id: []const u8,
@@ -27,23 +27,18 @@ pub fn Builder(comptime Node: type) type {
         };
 
         arena: *std.heap.ArenaAllocator,
-        queue: Queue,
+        queue: Queue = .empty,
 
         graph_attrs: ?AttrList = null,
 
         // These are arrays so that we preserve the order of which they are inserted.
-        nodes: NodeList,
-        edges: EdgeList,
-        node_map: NodeMap,
+        nodes: NodeList = .empty,
+        edges: EdgeList = .empty,
+        node_map: NodeMap = .empty,
 
         pub fn init(arena: *std.heap.ArenaAllocator) !Self {
-            const allocator = arena.allocator();
             return Self{
                 .arena = arena,
-                .queue = Queue.init(allocator),
-                .nodes = NodeList.init(allocator),
-                .edges = EdgeList.init(allocator),
-                .node_map = NodeMap.init(allocator),
             };
         }
 
@@ -65,7 +60,7 @@ pub fn Builder(comptime Node: type) type {
         pub fn defEdge(self: *Self, from: Node, to: Node, edge_attrs: ?AttrList) !void {
             const fromId = (try self.nodeEntry(from)).id;
             const toId = (try self.nodeEntry(to)).id;
-            try self.edges.append(.{ .fromId = fromId, .toId = toId, .attrs = edge_attrs });
+            try self.edges.append(self.arena.allocator(), .{ .fromId = fromId, .toId = toId, .attrs = edge_attrs });
         }
 
         /// Creates a new attribute list using the same arena allocator.
@@ -86,12 +81,12 @@ pub fn Builder(comptime Node: type) type {
             try node.writeId(fbs.writer());
 
             const id = fbs.getWritten();
-            const result = try self.node_map.getOrPut(id);
+            const result = try self.node_map.getOrPut(self.arena.allocator(), id);
             if (!result.found_existing) {
                 result.value_ptr.* = self.nodes.items.len;
 
                 const localId = self.str(id);
-                try self.nodes.append(NodeEntry{
+                try self.nodes.append(self.arena.allocator(), NodeEntry{
                     .id = localId,
                     .node = node,
                 });
@@ -100,7 +95,7 @@ pub fn Builder(comptime Node: type) type {
                 result.key_ptr.* = localId;
 
                 // Push to queue as well.
-                try self.queue.append(node);
+                try self.queue.append(self.arena.allocator(), node);
             }
 
             return &self.nodes.items[result.value_ptr.*];
@@ -207,9 +202,9 @@ test "example" {
     var b = try Builder(*const ExampleNode).init(&arena);
     try b.visit(&ex5);
 
-    var out = std.ArrayList(u8).init(testing.allocator);
-    defer out.deinit();
-    try b.writeTo(out.writer());
+    var out: std.ArrayList(u8) = .empty;
+    defer out.deinit(testing.allocator);
+    try b.writeTo(out.writer(testing.allocator));
 
     const result =
         \\digraph {
