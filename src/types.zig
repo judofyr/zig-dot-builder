@@ -65,12 +65,8 @@ pub const Shape = enum {
 
     pub fn format(
         self: Shape,
-        comptime fmt: []const u8,
-        options: std.fmt.FormatOptions,
         writer: anytype,
     ) !void {
-        _ = fmt;
-        _ = options;
         try writer.writeAll(@tagName(self));
     }
 };
@@ -98,12 +94,8 @@ pub const ArrowType = enum {
 
     pub fn format(
         self: ArrowType,
-        comptime fmt: []const u8,
-        options: std.fmt.FormatOptions,
         writer: anytype,
     ) !void {
-        _ = fmt;
-        _ = options;
         try writer.writeAll(@tagName(self));
     }
 };
@@ -116,12 +108,8 @@ pub const Rect = struct {
 
     pub fn format(
         self: Rect,
-        comptime fmt: []const u8,
-        options: std.fmt.FormatOptions,
         writer: anytype,
     ) !void {
-        _ = fmt;
-        _ = options;
         try writer.print("{d},{d},{d},{d}", self);
     }
 };
@@ -133,12 +121,8 @@ pub const ClusterMode = enum {
 
     pub fn format(
         self: ClusterMode,
-        comptime fmt: []const u8,
-        options: std.fmt.FormatOptions,
         writer: anytype,
     ) !void {
-        _ = fmt;
-        _ = options;
         try writer.writeAll(@tagName(self));
     }
 };
@@ -151,12 +135,8 @@ pub const DirType = enum {
 
     pub fn format(
         self: DirType,
-        comptime fmt: []const u8,
-        options: std.fmt.FormatOptions,
         writer: anytype,
     ) !void {
-        _ = fmt;
-        _ = options;
         try writer.writeAll(@tagName(self));
     }
 };
@@ -169,12 +149,8 @@ pub const Rankdir = enum {
 
     pub fn format(
         self: Rankdir,
-        comptime fmt: []const u8,
-        options: std.fmt.FormatOptions,
         writer: anytype,
     ) !void {
-        _ = fmt;
-        _ = options;
         try writer.writeAll(@tagName(self));
     }
 };
@@ -186,12 +162,8 @@ pub const RGB = struct {
 
     pub fn format(
         self: RGB,
-        comptime fmt: []const u8,
-        options: std.fmt.FormatOptions,
         writer: anytype,
     ) !void {
-        _ = fmt;
-        _ = options;
         try writer.print("#{x:0>2}{x:0>2}{x:0>2}", .{ self.red, self.green, self.blue });
     }
 };
@@ -207,12 +179,10 @@ pub const Color = union(enum) {
 
     pub fn format(
         self: Color,
-        comptime fmt: []const u8,
-        options: std.fmt.FormatOptions,
         writer: anytype,
     ) !void {
         switch (self) {
-            .rgb => |r| try r.format(fmt, options, writer),
+            .rgb => |r| try r.format(writer),
             .name => |name| try writer.writeAll(name),
             .num => |n| try writer.print("{}", .{n}),
         }

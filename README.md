@@ -40,7 +40,7 @@ const ExampleNode = struct {
     }
 
     pub fn build(self: *const ExampleNode, b: anytype) !void {
-        try b.defNode(self, b.attrs().withLabel("{}", .{self.val}));
+        try b.defNode(self, b.attrs().withLabel("{f}", .{self.val}));
         if (self.child) |child| {
             try b.defEdge(self, child, null);
         }

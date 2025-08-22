@@ -41,12 +41,8 @@ pub const AttrList = struct {
 
     pub fn format(
         self: AttrList,
-        comptime fmt: []const u8,
-        options: std.fmt.FormatOptions,
         w: anytype,
     ) !void {
-        _ = fmt;
-        _ = options;
         try self.writeTo(w);
     }
 
@@ -93,7 +89,7 @@ pub const AttrList = struct {
     }
 
     pub fn asString(self: AttrList) ![]const u8 {
-        return try std.fmt.allocPrint(self.arena.allocator(), "{}", .{self});
+        return try std.fmt.allocPrint(self.arena.allocator(), "{f}", .{self});
     }
 
     pub fn withArea(self: AttrList, value: f64) AttrList {
@@ -101,7 +97,7 @@ pub const AttrList = struct {
     }
 
     pub fn withArrowhead(self: AttrList, arrow: types.ArrowType) AttrList {
-        return self.withAttrPrint("arrowhead", "{}", .{arrow});
+        return self.withAttrPrint("arrowhead", "{f}", .{arrow});
     }
 
     pub fn withArrowsize(self: AttrList, size: f64) AttrList {
@@ -109,15 +105,15 @@ pub const AttrList = struct {
     }
 
     pub fn withArrowtail(self: AttrList, arrow: types.ArrowType) AttrList {
-        return self.withAttrPrint("arrowtail", "{}", .{arrow});
+        return self.withAttrPrint("arrowtail", "{f}", .{arrow});
     }
 
     pub fn withBb(self: AttrList, rect: types.Rect) AttrList {
-        return self.withAttrPrint("bb", "{}", .{rect});
+        return self.withAttrPrint("bb", "{f}", .{rect});
     }
 
     pub fn withBgcolor(self: AttrList, color: types.Color) AttrList {
-        return self.withAttrPrint("bgcolor", "{}", .{color});
+        return self.withAttrPrint("bgcolor", "{f}", .{color});
     }
 
     pub fn withCenter(self: AttrList, val: bool) AttrList {
@@ -133,11 +129,11 @@ pub const AttrList = struct {
     }
 
     pub fn withClusterrank(self: AttrList, mode: types.ClusterMode) AttrList {
-        return self.withAttrPrint("clusterrank", "{}", .{mode});
+        return self.withAttrPrint("clusterrank", "{f}", .{mode});
     }
 
     pub fn withColor(self: AttrList, color: types.Color) AttrList {
-        return self.withAttrPrint("color", "{}", .{color});
+        return self.withAttrPrint("color", "{f}", .{color});
     }
 
     pub fn withColorscheme(self: AttrList, value: []const u8) AttrList {
@@ -181,7 +177,7 @@ pub const AttrList = struct {
     }
 
     pub fn withDir(self: AttrList, dir: types.DirType) AttrList {
-        return self.withAttrPrint("dir", "{}", .{dir});
+        return self.withAttrPrint("dir", "{f}", .{dir});
     }
 
     // TODO: Add diredgeconstraints. It has a weird type so skipping it for now.
@@ -199,11 +195,11 @@ pub const AttrList = struct {
     }
 
     pub fn withShape(self: AttrList, shape: types.Shape) AttrList {
-        return self.withAttrPrint("shape", "{}", .{shape});
+        return self.withAttrPrint("shape", "{f}", .{shape});
     }
 
     pub fn withRankdir(self: AttrList, rankdir: types.Rankdir) AttrList {
-        return self.withAttrPrint("rankdir", "{}", .{rankdir});
+        return self.withAttrPrint("rankdir", "{f}", .{rankdir});
     }
 };
 
